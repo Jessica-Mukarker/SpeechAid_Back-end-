@@ -1,0 +1,80 @@
+<?php
+
+// Database connection
+$servername = "localhost";
+$username = "root";
+$password = "";
+$database = "speech_aid_db";
+
+$conn = new mysqli($servername, $username, $password, $database);
+$baseURL = "http://localhost/speechaidApi"; 
+if ($conn->connect_error) {
+    die("Connection failed: " . $conn->connect_error);
+}
+
+
+// Patients API
+// GET all patients
+// URL: /patients
+if ($_SERVER['REQUEST_METHOD'] === 'GET') {
+    $sql = "SELECT * FROM patients";
+    $result = $conn->query($sql);
+    $patients = [];
+    if ($result->num_rows > 0) {
+        while ($row = $result->fetch_assoc()) {
+            $patients[] = $row;
+        }
+    }
+    echo json_encode($patients);
+}
+
+// POST new patient
+// URL: /patients
+if ($_SERVER['REQUEST_METHOD'] === 'POST' ) {
+    $data = json_decode(file_get_contents("php://input"), true);
+    $therapist_id = $data['therapist_id'];
+    $patient_name = $data['patient_name'];
+    $patient_age = $data['patient_age'];
+    
+
+    $sql = "INSERT INTO patients (therapist_id, patient_name, patient_age) VALUES ('$therapist_id', '$patient_name', '$patient_age')";
+    if ($conn->query($sql) === TRUE) {
+        echo "New patient created successfully";
+    } else {
+        echo "Error: " . $sql . "<br>" . $conn->error;
+    }
+}
+
+// PATCH patient details
+// URL: /patients/{patient_id}
+if ($_SERVER['REQUEST_METHOD'] === 'PATCH' && preg_match('/\/patients\/(\d+)/', $_SERVER['REQUEST_URI'], $matches)) {
+    $patient_id = $matches[1];
+    $data = json_decode(file_get_contents("php://input"), true);
+    $update_fields = [];
+    foreach ($data as $key => $value) {
+        $update_fields[] = "$key = '$value'";
+    }
+    $update_query = implode(", ", $update_fields);
+    $sql = "UPDATE patients SET $update_query WHERE patient_id = $patient_id";
+    if ($conn->query($sql) === TRUE) {
+        echo "Patient details updated successfully";
+    } else {
+        echo "Error updating record: " . $conn->error;
+    }
+}
+
+// DELETE patient
+// URL: /patients/{patient_id}
+if ($_SERVER['REQUEST_METHOD'] === 'DELETE' && preg_match('/\/patients\/(\d+)/', $_SERVER['REQUEST_URI'], $matches)) {
+    $patient_id = $matches[1];
+    $sql = "DELETE FROM patients WHERE patient_id = $patient_id";
+    if ($conn->query($sql) === TRUE) {
+        echo "Patient deleted successfully";
+    } else {
+        echo "Error deleting record: " . $conn->error;
+    }
+}
+
+$conn->close();
+
+?>

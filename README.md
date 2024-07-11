@@ -25,17 +25,6 @@ To install and run the SpeechAid backend, follow these steps:
     cd SpeechAid_Back-end-
     ```
 
-3. **Install Dependencies:**
-    ```bash
-    # Assuming you are using Node.js
-    npm install
-    ```
-
-4. **Run the Backend Server:**
-    ```bash
-    npm start
-    ```
-
 ## Usage
 
 The backend server provides API endpoints for the SpeechAid application. It supports various functionalities such as user authentication, progress tracking, and remote therapist feedback.
